@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
-import { Camera, User, MapPin, Upload, Image } from 'lucide-react';
+import { Camera, User, MapPin, Upload, Image, X } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { useProfiles, UserProfile } from '@/hooks/useProfiles';
 import { useAuth } from '@/hooks/useAuth';
