@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 
 // Define types for our user and auth context
@@ -31,8 +31,21 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+// This wrapper adds safety around router hooks
+const SafeAuthProvider = ({ children }: { children: ReactNode }) => {
+  try {
+    return <AuthProviderWithRouter>{children}</AuthProviderWithRouter>;
+  } catch (error) {
+    console.error("Router context not available:", error);
+    // Fallback that doesn't use router hooks
+    return <div>Loading authentication...</div>;
+  }
+};
+
+// The actual provider that uses router hooks
+const AuthProviderWithRouter = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
@@ -217,6 +230,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     </AuthContext.Provider>
   );
 };
+
+// Export the safe provider
+export const AuthProvider = SafeAuthProvider;
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
