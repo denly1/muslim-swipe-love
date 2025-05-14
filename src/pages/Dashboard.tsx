@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Search } from 'lucide-react';
 import { useProfiles, Profile } from '@/hooks/useProfiles';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from '@/components/ui/use-toast';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -40,9 +41,15 @@ const Dashboard = () => {
   };
   
   const handleStartChat = (username: string) => {
-    // In a real app, this would link to Telegram chat
+    // Open Telegram chat with the matched profile
     window.open(`https://t.me/${username}`, '_blank');
     setShowMatch(null);
+    
+    // Show toast notification
+    toast({
+      title: "Чат открыт",
+      description: `Начните общение с @${username} в Telegram`,
+    });
   };
   
   const handleRefreshLocation = async () => {
@@ -65,7 +72,7 @@ const Dashboard = () => {
           size="sm"
           onClick={handleRefreshLocation}
           disabled={isRefreshing}
-          className="text-muslim-green-700 dark:text-muslim-green-300"
+          className="text-muslim-green-700 dark:text-muslim-green-300 shadow-sm hover:shadow-md transition-shadow"
         >
           {isRefreshing ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -89,8 +96,8 @@ const Dashboard = () => {
             onDislike={handleDislike}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center h-96 text-center">
-            <div className="bg-muslim-green-100 dark:bg-muslim-green-800 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+          <div className="flex flex-col items-center justify-center h-96 text-center px-4">
+            <div className="bg-muslim-green-100 dark:bg-muslim-green-800 w-16 h-16 rounded-full flex items-center justify-center mb-4 shadow-inner">
               <Search className="h-8 w-8 text-muslim-green-600 dark:text-muslim-green-400" />
             </div>
             <h3 className="text-xl font-semibold text-muslim-green-800 dark:text-white mb-2">

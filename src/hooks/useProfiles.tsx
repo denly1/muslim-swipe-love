@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useAuth } from "./useAuth";
 import { toast } from "@/components/ui/use-toast";
@@ -21,6 +20,7 @@ export type Profile = {
   religiousLevel: "practicing" | "moderate" | "cultural";
   maritalStatus: "single" | "divorced" | "widowed";
   lookingFor: "marriage" | "friendship" | "both";
+  telegramUsername?: string; // Added Telegram username field
 };
 
 export type UserProfile = Profile & {
@@ -66,7 +66,8 @@ const mockProfiles: Profile[] = [
     interests: ["cooking", "reading", "religion"],
     religiousLevel: "practicing",
     maritalStatus: "single",
-    lookingFor: "marriage"
+    lookingFor: "marriage",
+    telegramUsername: "amina_muslim"
   },
   {
     id: "profile2",
@@ -83,7 +84,8 @@ const mockProfiles: Profile[] = [
     interests: ["teaching", "traveling", "kids"],
     religiousLevel: "moderate",
     maritalStatus: "single",
-    lookingFor: "marriage"
+    lookingFor: "marriage",
+    telegramUsername: "fatima_teacher"
   },
   {
     id: "profile3",
@@ -100,7 +102,8 @@ const mockProfiles: Profile[] = [
     interests: ["medicine", "family", "honesty"],
     religiousLevel: "practicing",
     maritalStatus: "single",
-    lookingFor: "marriage"
+    lookingFor: "marriage",
+    telegramUsername: "yasmin_med"
   },
   {
     id: "profile4",
@@ -117,7 +120,8 @@ const mockProfiles: Profile[] = [
     interests: ["tech", "fitness", "travel"],
     religiousLevel: "moderate",
     maritalStatus: "divorced",
-    lookingFor: "friendship"
+    lookingFor: "friendship",
+    telegramUsername: "leila_it"
   },
   {
     id: "profile5",
@@ -134,7 +138,8 @@ const mockProfiles: Profile[] = [
     interests: ["engineering", "sports", "travel"],
     religiousLevel: "practicing",
     maritalStatus: "single",
-    lookingFor: "marriage"
+    lookingFor: "marriage",
+    telegramUsername: "ibrahim_engineer"
   }
 ];
 

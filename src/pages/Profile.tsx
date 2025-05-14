@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
-import { Camera, User, MapPin } from 'lucide-react';
+import { Camera, User, MapPin, Upload, Image } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { useProfiles, UserProfile } from '@/hooks/useProfiles';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,6 +25,7 @@ const profileSchema = z.object({
   lookingFor: z.enum(['marriage', 'friendship', 'both']),
   city: z.string().min(2, 'Укажите город'),
   country: z.string().min(2, 'Укажите страну'),
+  telegramUsername: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -33,6 +34,8 @@ const Profile = () => {
   const { userProfile, updateUserProfile } = useProfiles();
   const { user, isPremium } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [uploadedPhoto, setUploadedPhoto] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Set up form with default values from user profile
   const form = useForm<ProfileFormValues>({
@@ -46,11 +49,57 @@ const Profile = () => {
       lookingFor: userProfile?.lookingFor || 'marriage',
       city: userProfile?.location?.city || '',
       country: userProfile?.location?.country || '',
+      telegramUsername: userProfile?.telegramUsername || '',
     },
   });
+
+  // Handle file selection
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Пожалуйста, выберите изображение',
+      });
+      return;
+    }
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        variant: 'destructive',
+        title: 'Ошибка',
+        description: 'Размер файла не должен превышать 5MB',
+      });
+      return;
+    }
+
+    // Create a FileReader to read the file as a data URL
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setUploadedPhoto(event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Trigger file input click
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
   
   const onSubmit = (data: ProfileFormValues) => {
     try {
+      // Create new photos array with uploaded photo at the beginning if it exists
+      const photos = uploadedPhoto 
+        ? [uploadedPhoto, ...(userProfile?.photos || [])]
+        : userProfile?.photos || [];
+
       updateUserProfile({
         ...userProfile as UserProfile,
         name: data.name,
@@ -59,14 +108,17 @@ const Profile = () => {
         religiousLevel: data.religiousLevel,
         maritalStatus: data.maritalStatus,
         lookingFor: data.lookingFor,
+        telegramUsername: data.telegramUsername,
         location: {
           ...userProfile?.location as any,
           city: data.city,
           country: data.country,
         },
+        photos,
       });
       
       setIsEditing(false);
+      setUploadedPhoto(null);
       
       toast({
         title: 'Профиль обновлен',
@@ -106,13 +158,13 @@ const Profile = () => {
     <Layout title="Профиль">
       <div className="py-4">
         {/* Profile header */}
-        <div className="mb-6 relative">
+        <div className="mb-6 relative bg-gradient-to-r from-muslim-green-100 to-muslim-green-50 dark:from-muslim-green-800 dark:to-muslim-green-700 p-6 rounded-xl shadow-sm">
           {/* Profile photo */}
           <div className="flex justify-center mb-4">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-muslim-green-200 dark:border-muslim-green-700">
+              <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-muslim-green-200 dark:border-muslim-green-700 shadow-lg">
                 <img 
-                  src={userProfile.photos[0]} 
+                  src={uploadedPhoto || userProfile.photos[0]} 
                   alt={userProfile.name}
                   className="w-full h-full object-cover"
                 />
@@ -126,9 +178,23 @@ const Profile = () => {
               )}
               
               {/* Change photo button */}
-              <button className="absolute bottom-0 right-0 w-8 h-8 bg-muslim-green-600 text-white rounded-full flex items-center justify-center">
-                <Camera size={16} />
-              </button>
+              {isEditing && (
+                <button 
+                  className="absolute bottom-0 right-0 w-10 h-10 bg-muslim-green-600 text-white rounded-full flex items-center justify-center hover:bg-muslim-green-700 transition-colors shadow-lg"
+                  onClick={handleUploadClick}
+                >
+                  <Camera size={20} />
+                </button>
+              )}
+
+              {/* Hidden file input */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                accept="image/*"
+                onChange={handlePhotoSelect}
+              />
             </div>
           </div>
           
@@ -144,6 +210,12 @@ const Profile = () => {
                 {userProfile.location?.city}, {userProfile.location?.country}
               </span>
             </div>
+
+            {userProfile.telegramUsername && (
+              <div className="mt-1 text-muslim-green-600 dark:text-muslim-green-300 text-sm">
+                Telegram: @{userProfile.telegramUsername}
+              </div>
+            )}
           </div>
           
           {/* Edit profile toggle */}
@@ -152,6 +224,7 @@ const Profile = () => {
               variant={isEditing ? "default" : "outline"}
               onClick={() => setIsEditing(!isEditing)}
               size="sm"
+              className="shadow-sm"
             >
               {isEditing ? 'Отменить редактирование' : 'Редактировать профиль'}
             </Button>
@@ -162,7 +235,35 @@ const Profile = () => {
         
         {/* Profile form */}
         {isEditing ? (
-          <Card className="p-4 border-muslim-green-200 dark:border-muslim-green-700">
+          <Card className="p-6 border-muslim-green-200 dark:border-muslim-green-700 bg-white dark:bg-muslim-green-800 shadow-md">
+            {/* Photo upload section */}
+            {uploadedPhoto ? (
+              <div className="mb-4">
+                <h3 className="text-sm font-medium text-muslim-green-700 dark:text-muslim-green-300 mb-2">Новое фото:</h3>
+                <div className="relative w-32 h-32 bg-muslim-green-50 dark:bg-muslim-green-900 rounded-lg overflow-hidden border border-muslim-green-200 dark:border-muslim-green-700 mx-auto">
+                  <img src={uploadedPhoto} alt="Uploaded" className="w-full h-full object-cover" />
+                  <button 
+                    className="absolute top-2 right-2 bg-muslim-green-600 text-white rounded-full p-1 hover:bg-muslim-green-700"
+                    onClick={() => setUploadedPhoto(null)}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mb-4">
+                <Button
+                  variant="outline"
+                  onClick={handleUploadClick}
+                  className="w-full py-8 border-dashed border-2 flex flex-col items-center gap-2"
+                >
+                  <Upload size={24} className="text-muslim-green-600 dark:text-muslim-green-400" />
+                  <span>Загрузить фото</span>
+                  <span className="text-xs text-muslim-green-500 dark:text-muslim-green-400">JPG, PNG, GIF (макс. 5MB)</span>
+                </Button>
+              </div>
+            )}
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -172,7 +273,7 @@ const Profile = () => {
                     <FormItem>
                       <FormLabel>Имя</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} className="bg-muslim-green-50 dark:bg-muslim-green-700 border-muslim-green-200 dark:border-muslim-green-600" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -186,7 +287,7 @@ const Profile = () => {
                     <FormItem>
                       <FormLabel>Возраст</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} />
+                        <Input type="number" {...field} className="bg-muslim-green-50 dark:bg-muslim-green-700 border-muslim-green-200 dark:border-muslim-green-600" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -200,7 +301,25 @@ const Profile = () => {
                     <FormItem>
                       <FormLabel>О себе</FormLabel>
                       <FormControl>
-                        <Textarea {...field} />
+                        <Textarea {...field} className="bg-muslim-green-50 dark:bg-muslim-green-700 border-muslim-green-200 dark:border-muslim-green-600 min-h-[100px]" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="telegramUsername"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Telegram (без @)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          placeholder="username" 
+                          className="bg-muslim-green-50 dark:bg-muslim-green-700 border-muslim-green-200 dark:border-muslim-green-600" 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -219,7 +338,7 @@ const Profile = () => {
                           defaultValue={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="bg-muslim-green-50 dark:bg-muslim-green-700 border-muslim-green-200 dark:border-muslim-green-600">
                               <SelectValue placeholder="Выберите уровень" />
                             </SelectTrigger>
                           </FormControl>
@@ -245,7 +364,7 @@ const Profile = () => {
                           defaultValue={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="bg-muslim-green-50 dark:bg-muslim-green-700 border-muslim-green-200 dark:border-muslim-green-600">
                               <SelectValue placeholder="Выберите статус" />
                             </SelectTrigger>
                           </FormControl>
@@ -272,7 +391,7 @@ const Profile = () => {
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="bg-muslim-green-50 dark:bg-muslim-green-700 border-muslim-green-200 dark:border-muslim-green-600">
                             <SelectValue placeholder="Выберите цель" />
                           </SelectTrigger>
                         </FormControl>
@@ -295,7 +414,7 @@ const Profile = () => {
                       <FormItem>
                         <FormLabel>Город</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} className="bg-muslim-green-50 dark:bg-muslim-green-700 border-muslim-green-200 dark:border-muslim-green-600" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -309,7 +428,7 @@ const Profile = () => {
                       <FormItem>
                         <FormLabel>Страна</FormLabel>
                         <FormControl>
-                          <Input {...field} />
+                          <Input {...field} className="bg-muslim-green-50 dark:bg-muslim-green-700 border-muslim-green-200 dark:border-muslim-green-600" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -317,20 +436,45 @@ const Profile = () => {
                   />
                 </div>
                 
-                <Button type="submit" className="w-full">
+                <Button 
+                  type="submit" 
+                  className="w-full shadow-md bg-muslim-green-600 hover:bg-muslim-green-700 text-white"
+                >
                   Сохранить изменения
                 </Button>
               </form>
             </Form>
           </Card>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-6 bg-white dark:bg-muslim-green-800 p-6 rounded-xl shadow-md">
+            {/* Profile photo gallery */}
+            {userProfile.photos.length > 0 && (
+              <div>
+                <h3 className="text-lg font-medium text-muslim-green-800 dark:text-white mb-3">
+                  Фотографии
+                </h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {userProfile.photos.map((photo, index) => (
+                    <div key={index} className="aspect-square rounded-lg overflow-hidden border border-muslim-green-200 dark:border-muslim-green-700">
+                      <img 
+                        src={photo} 
+                        alt={`Photo ${index + 1}`} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Separator />
+            
             {/* Profile sections */}
             <div>
               <h3 className="text-lg font-medium text-muslim-green-800 dark:text-white mb-2">
                 О себе
               </h3>
-              <p className="text-muslim-green-700 dark:text-muslim-green-300">
+              <p className="text-muslim-green-700 dark:text-muslim-green-300 bg-muslim-green-50 dark:bg-muslim-green-700/50 p-3 rounded-lg">
                 {userProfile.bio}
               </p>
             </div>
@@ -341,7 +485,7 @@ const Profile = () => {
               <h3 className="text-lg font-medium text-muslim-green-800 dark:text-white mb-2">
                 Религиозность
               </h3>
-              <p className="text-muslim-green-700 dark:text-muslim-green-300">
+              <p className="text-muslim-green-700 dark:text-muslim-green-300 bg-muslim-green-50 dark:bg-muslim-green-700/50 p-3 rounded-lg">
                 {userProfile.religiousLevel === "practicing" ? "Практикующий/ая" : 
                  userProfile.religiousLevel === "moderate" ? "Умеренно практикующий/ая" : 
                  "Культурное соблюдение"}
@@ -354,7 +498,7 @@ const Profile = () => {
               <h3 className="text-lg font-medium text-muslim-green-800 dark:text-white mb-2">
                 Семейное положение
               </h3>
-              <p className="text-muslim-green-700 dark:text-muslim-green-300">
+              <p className="text-muslim-green-700 dark:text-muslim-green-300 bg-muslim-green-50 dark:bg-muslim-green-700/50 p-3 rounded-lg">
                 {userProfile.maritalStatus === "single" ? "Не был/а в браке" : 
                  userProfile.maritalStatus === "divorced" ? "В разводе" : 
                  "Вдовец/Вдова"}
@@ -367,7 +511,7 @@ const Profile = () => {
               <h3 className="text-lg font-medium text-muslim-green-800 dark:text-white mb-2">
                 Цель знакомства
               </h3>
-              <p className="text-muslim-green-700 dark:text-muslim-green-300">
+              <p className="text-muslim-green-700 dark:text-muslim-green-300 bg-muslim-green-50 dark:bg-muslim-green-700/50 p-3 rounded-lg">
                 {userProfile.lookingFor === "marriage" ? "Брак" : 
                  userProfile.lookingFor === "friendship" ? "Дружба" : 
                  "Общение"}
@@ -380,11 +524,11 @@ const Profile = () => {
               <h3 className="text-lg font-medium text-muslim-green-800 dark:text-white mb-2">
                 Интересы
               </h3>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 bg-muslim-green-50 dark:bg-muslim-green-700/50 p-3 rounded-lg">
                 {userProfile.interests.map((interest, index) => (
                   <span 
                     key={index}
-                    className="px-3 py-1 bg-muslim-green-100 dark:bg-muslim-green-800 text-muslim-green-700 dark:text-muslim-green-300 rounded-full text-sm"
+                    className="px-3 py-1 bg-muslim-green-100 dark:bg-muslim-green-800 text-muslim-green-700 dark:text-muslim-green-300 rounded-full text-sm border border-muslim-green-200 dark:border-muslim-green-600"
                   >
                     {interest}
                   </span>
