@@ -11,7 +11,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
+    --primary: 204 88% 53%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -23,8 +23,13 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --ring: 204 88% 53%;
+    --radius: 0.75rem;
+    
+    /* Telegram color palette */
+    --telegram-blue: 204 88% 53%;
+    --telegram-light: 204 88% 95%;
+    --telegram-dark: 210 50% 40%;
   }
  
   .dark {
@@ -34,7 +39,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
+    --primary: 204 88% 53%;
     --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -46,7 +51,12 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.5% 48%;
+    --ring: 204 88% 53%;
+
+    /* Telegram color palette - dark mode */
+    --telegram-blue: 204 88% 53%;
+    --telegram-light: 210 33% 25%;
+    --telegram-dark: 204 88% 90%;
   }
 }
 
@@ -59,9 +69,37 @@
   }
 }
 
-/* Custom styles for the profile card */
+/* Custom styles for Telegram mini app */
+.tg-app {
+  @apply max-w-md mx-auto rounded-2xl overflow-hidden shadow-lg;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Profile card */
 .profile-card {
-  @apply relative bg-white dark:bg-muslim-green-800 rounded-2xl shadow-xl overflow-hidden h-[calc(100vh-12rem)] max-h-[700px] w-full max-w-md mx-auto;
+  @apply relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden h-[calc(100vh-12rem)] max-h-[700px] w-full max-w-md mx-auto;
+}
+
+/* Action buttons */
+.tg-button {
+  @apply bg-[hsl(var(--telegram-blue))] hover:bg-[hsl(var(--telegram-blue))] hover:opacity-90 text-white rounded-xl px-5 py-3 font-medium transition-all;
+}
+
+.tg-button-secondary {
+  @apply bg-[hsl(var(--telegram-light))] text-[hsl(var(--telegram-dark))] hover:bg-[hsl(var(--telegram-light))] hover:opacity-90 rounded-xl px-5 py-3 font-medium transition-all;
+}
+
+/* Chat bubbles */
+.chat-bubble {
+  @apply rounded-2xl p-3 mb-2 max-w-[80%];
+}
+
+.chat-bubble-sent {
+  @apply bg-[hsl(var(--telegram-blue))] text-white ml-auto rounded-tr-none;
+}
+
+.chat-bubble-received {
+  @apply bg-[hsl(var(--telegram-light))] text-[hsl(var(--telegram-dark))] mr-auto rounded-tl-none;
 }
 
 /* Swipe buttons */
@@ -174,4 +212,21 @@
 }
 .text-muslim-gold-700 {
   color: #B45309;
+}
+
+/* Telegram-specific styles */
+.bg-telegram-blue {
+  @apply bg-[hsl(var(--telegram-blue))];
+}
+.text-telegram-blue {
+  @apply text-[hsl(var(--telegram-blue))];
+}
+.bg-telegram-light {
+  @apply bg-[hsl(var(--telegram-light))];
+}
+.text-telegram-dark {
+  @apply text-[hsl(var(--telegram-dark))];
+}
+.border-telegram-blue {
+  @apply border-[hsl(var(--telegram-blue))];
 }

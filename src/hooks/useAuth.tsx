@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
@@ -12,6 +11,7 @@ type User = {
   premium: boolean;
   likeCount: number;
   lastLikeDate: string | null;
+  telegramUsername?: string; // Added Telegram username field
 };
 
 type AuthContextType = {
@@ -19,7 +19,7 @@ type AuthContextType = {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, avatar?: File) => Promise<void>;
+  register: (name: string, email: string, password: string, telegramUsername: string, avatar?: File) => Promise<void>;
   logout: () => void;
   updateUser: (updatedUser: Partial<User>) => void;
   getLikeLimit: () => number;
@@ -81,27 +81,30 @@ const AuthProviderWithRouter = ({ children }: { children: ReactNode }) => {
         premium: false,
         likeCount: 0,
         lastLikeDate: null,
+        // Generate a telegram username from the email for demo purposes
+        telegramUsername: email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + "_tg",
       };
       
       setUser(mockUser);
       localStorage.setItem("muslim_dating_user", JSON.stringify(mockUser));
       toast({
-        title: "Login successful",
-        description: "Welcome back to Halal Match!",
+        title: "Вход выполнен",
+        description: "Добро пожаловать в Halal Match!",
+        className: "bg-telegram-blue text-white",
       });
       navigate("/dashboard");
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "Please check your credentials",
+        title: "Ошибка входа",
+        description: error instanceof Error ? error.message : "Проверьте ваши данные",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (name: string, email: string, password: string, avatar?: File) => {
+  const register = async (name: string, email: string, password: string, telegramUsername: string, avatar?: File) => {
     setIsLoading(true);
     try {
       // Mock registration - in a real app, we would call an API
@@ -115,6 +118,7 @@ const AuthProviderWithRouter = ({ children }: { children: ReactNode }) => {
         premium: false,
         likeCount: 0,
         lastLikeDate: null,
+        telegramUsername,
       };
       
       if (avatar) {
@@ -125,15 +129,16 @@ const AuthProviderWithRouter = ({ children }: { children: ReactNode }) => {
       setUser(mockUser);
       localStorage.setItem("muslim_dating_user", JSON.stringify(mockUser));
       toast({
-        title: "Registration successful",
-        description: "Welcome to Halal Match!",
+        title: "Регистрация выполнена",
+        description: "Добро пожаловать в Halal Match!",
+        className: "bg-telegram-blue text-white",
       });
       navigate("/profile");
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Registration failed",
-        description: error instanceof Error ? error.message : "Please try again",
+        title: "Ошибка регистрации",
+        description: error instanceof Error ? error.message : "Пожалуйста, попробуйте еще раз",
       });
     } finally {
       setIsLoading(false);
@@ -145,8 +150,8 @@ const AuthProviderWithRouter = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem("muslim_dating_user");
     navigate("/");
     toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
+      title: "Выход выполнен",
+      description: "Вы успешно вышли из системы.",
     });
   };
 
@@ -203,8 +208,9 @@ const AuthProviderWithRouter = ({ children }: { children: ReactNode }) => {
     if (user) {
       updateUser({ premium: true });
       toast({
-        title: "Premium Activated!",
-        description: "You now have access to all premium features.",
+        title: "Premium активировано!",
+        description: "У вас теперь есть доступ ко всем премиум-функциям.",
+        className: "bg-telegram-blue text-white",
       });
     }
   };
@@ -217,7 +223,15 @@ const AuthProviderWithRouter = ({ children }: { children: ReactNode }) => {
         isAuthenticated: !!user,
         login,
         register,
-        logout,
+        logout: () => {
+          setUser(null);
+          localStorage.removeItem("muslim_dating_user");
+          navigate("/");
+          toast({
+            title: "Выход выполнен",
+            description: "Вы успешно вышли из системы.",
+          });
+        },
         updateUser,
         getLikeLimit,
         hasReachedLikeLimit,

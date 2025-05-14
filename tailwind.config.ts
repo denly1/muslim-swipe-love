@@ -77,6 +77,12 @@ export default {
 					800: "#FF8F00",
 					900: "#FF6F00",
 				},
+				// Telegram theme colors
+				telegram: {
+					blue: 'hsl(var(--telegram-blue))',
+					light: 'hsl(var(--telegram-light))',
+					dark: 'hsl(var(--telegram-dark))',
+				},
 				// Keep sidebar and other themed colors
                 sidebar: {
                     DEFAULT: 'hsl(var(--sidebar-background))',
@@ -115,6 +121,14 @@ export default {
 					"0%, 100%": { transform: "scale(1)" },
 					"50%": { transform: "scale(1.15)" },
 				},
+				"telegram-fade-in": {
+					"0%": { opacity: "0", transform: "translateY(10px)" },
+					"100%": { opacity: "1", transform: "translateY(0)" }
+				},
+				"float": {
+					"0%, 100%": { transform: "translateY(0)" },
+					"50%": { transform: "translateY(-10px)" }
+				}
 			},
 			animation: {
 				"accordion-down": "accordion-down 0.2s ease-out",
@@ -122,10 +136,13 @@ export default {
 				"swipe-right": "swipe-right 0.5s forwards",
 				"swipe-left": "swipe-left 0.5s forwards",
 				"match-pulse": "match-pulse 1s infinite ease-in-out",
+				"telegram-fade-in": "telegram-fade-in 0.4s ease-out",
+				"float": "float 3s ease-in-out infinite"
 			},
 			backgroundImage: {
 				"islamic-pattern": "url('/islamic-pattern.svg')",
 				"muslim-gradient": "linear-gradient(135deg, #0A5F38 0%, #063E23 100%)",
+				"telegram-gradient": "linear-gradient(135deg, #37AEE2 0%, #1E96C8 100%)",
 			}
 		}
 	},

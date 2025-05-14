@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { useAuth } from "./useAuth";
 import { toast } from "@/components/ui/use-toast";
 
-// Определяем тип Profile для наших анкет знакомств
+// Define Profile type for our dating profiles
 export type Profile = {
   id: string;
   name: string;
@@ -15,12 +15,12 @@ export type Profile = {
     city?: string;
     country?: string;
   };
-  distance?: number; // в км
+  distance?: number; // in km
   interests: string[];
   religiousLevel: "practicing" | "moderate" | "cultural";
   maritalStatus: "single" | "divorced" | "widowed";
   lookingFor: "marriage" | "friendship" | "both";
-  telegramUsername?: string; // Поле для имени пользователя Telegram
+  telegramUsername?: string; // Telegram username field - only shown on match
 };
 
 export type UserProfile = Profile & {
@@ -184,7 +184,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   // Храним профили, которые поставили лайк пользователю (доступно премиум-пользователям)
   const [likedByProfiles, setLikedByProfiles] = useState<Profile[]>([]);
   
-  // Загружаем профили при монтировании компонента
+  // Load profiles when component mounts
   useEffect(() => {
     if (user) {
       loadInitialData();
@@ -427,20 +427,20 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     });
   };
   
-  // Ставим лайк профилю
+  // Like a profile
   const likeProfile = (profileId: string) => {
     if (!user) return;
     
-    // Обновляем список лайкнутых профилей
+    // Update liked profiles list
     const newLikedProfiles = new Set(likedProfiles);
     newLikedProfiles.add(profileId);
     setLikedProfiles(newLikedProfiles);
     localStorage.setItem(`muslim_dating_likes_${user.id}`, JSON.stringify([...newLikedProfiles]));
     
-    // Проверяем на совпадение
+    // Check for match
     const likedProfile = profiles.find(p => p.id === profileId);
     if (likedProfile && likedByProfiles.some(p => p.id === profileId)) {
-      // Это матч!
+      // It's a match!
       const updatedMatches = [...matches, likedProfile];
       setMatches(updatedMatches);
       localStorage.setItem(`muslim_dating_matches_${user.id}`, JSON.stringify(updatedMatches));
@@ -448,10 +448,11 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
       toast({
         title: "Это матч! 💚",
         description: `Вы и ${likedProfile.name} понравились друг другу!`,
+        className: "bg-telegram-blue text-white",
       });
     }
     
-    // Переходим к следующему профилю
+    // Move to next profile
     nextProfile();
   };
   
@@ -501,7 +502,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         userProfile,
         likedProfiles,
         dislikedProfiles,
-        matches,
+        matches, // Telegram usernames will only be visible in matches
         currentProfile,
         loadingProfiles,
         loadingLocation,
