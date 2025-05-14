@@ -81,113 +81,113 @@ const Index = () => {
         <div className="container px-4 mx-auto max-w-md">
           <Card className="border-muslim-green-200 dark:border-muslim-green-700 shadow-lg">
             <CardHeader className="pb-4">
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login">Вход</TabsTrigger>
                   <TabsTrigger value="register">Регистрация</TabsTrigger>
                 </TabsList>
+              
+                <CardContent>
+                  <TabsContent value="login" className="mt-0">
+                    <Form {...loginForm}>
+                      <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                        <FormField
+                          control={loginForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input placeholder="email@example.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={loginForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Пароль</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="••••••" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <Button 
+                          type="submit" 
+                          className="w-full bg-muslim-green-600 hover:bg-muslim-green-700"
+                          disabled={loginForm.formState.isSubmitting}
+                        >
+                          {loginForm.formState.isSubmitting ? 'Загрузка...' : 'Войти'}
+                        </Button>
+                      </form>
+                    </Form>
+                  </TabsContent>
+                  
+                  <TabsContent value="register" className="mt-0">
+                    <Form {...registerForm}>
+                      <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                        <FormField
+                          control={registerForm.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Имя</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Ваше имя" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={registerForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input placeholder="email@example.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={registerForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Пароль</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="••••••" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <Button 
+                          type="submit" 
+                          className="w-full bg-muslim-green-600 hover:bg-muslim-green-700"
+                          disabled={registerForm.formState.isSubmitting}
+                        >
+                          {registerForm.formState.isSubmitting ? 'Загрузка...' : 'Зарегистрироваться'}
+                        </Button>
+                      </form>
+                    </Form>
+                  </TabsContent>
+                </CardContent>
               </Tabs>
             </CardHeader>
-            
-            <CardContent>
-              <TabsContent value="login" className="mt-0">
-                <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                    <FormField
-                      control={loginForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="email@example.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={loginForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Пароль</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="••••••" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-muslim-green-600 hover:bg-muslim-green-700"
-                      disabled={loginForm.formState.isSubmitting}
-                    >
-                      {loginForm.formState.isSubmitting ? 'Загрузка...' : 'Войти'}
-                    </Button>
-                  </form>
-                </Form>
-              </TabsContent>
-              
-              <TabsContent value="register" className="mt-0">
-                <Form {...registerForm}>
-                  <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
-                    <FormField
-                      control={registerForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Имя</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ваше имя" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={registerForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input placeholder="email@example.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={registerForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Пароль</FormLabel>
-                          <FormControl>
-                            <Input type="password" placeholder="••••••" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-muslim-green-600 hover:bg-muslim-green-700"
-                      disabled={registerForm.formState.isSubmitting}
-                    >
-                      {registerForm.formState.isSubmitting ? 'Загрузка...' : 'Зарегистрироваться'}
-                    </Button>
-                  </form>
-                </Form>
-              </TabsContent>
-            </CardContent>
             
             <CardFooter className="flex flex-col space-y-2 border-t border-muslim-green-200 dark:border-muslim-green-700 pt-4">
               <p className="text-sm text-center text-muslim-green-600 dark:text-muslim-green-400">
