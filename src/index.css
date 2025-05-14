@@ -5,83 +5,48 @@
 
 @layer base {
   :root {
-    --background: 158 40% 98%;
-    --foreground: 158 73% 6%;
-
-    --card: 158 40% 98%;
-    --card-foreground: 158 73% 6%;
-
-    --popover: 158 40% 98%;
-    --popover-foreground: 158 73% 6%;
-
-    --primary: 142 54% 30%; /* Main green */
-    --primary-foreground: 158 10% 98%;
-
-    --secondary: 142 25% 90%; /* Light green */
-    --secondary-foreground: 142 54% 30%;
-
-    --muted: 158 25% 90%;
-    --muted-foreground: 158 30% 35%;
-
-    --accent: 39 100% 50%; /* Gold accent */
-    --accent-foreground: 142 54% 30%;
-
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 158 10% 98%;
-
-    --border: 158 25% 85%;
-    --input: 158 25% 85%;
-    --ring: 142 54% 30%;
-
-    --radius: 0.75rem;
-
-    --sidebar-background: 142 54% 15%;
-    --sidebar-foreground: 158 10% 98%;
-    --sidebar-primary: 142 54% 30%;
-    --sidebar-primary-foreground: 158 10% 98%;
-    --sidebar-accent: 39 100% 50%;
-    --sidebar-accent-foreground: 142 54% 15%;
-    --sidebar-border: 142 30% 20%;
-    --sidebar-ring: 142 54% 30%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
   }
-
+ 
   .dark {
-    --background: 142 54% 10%;
-    --foreground: 158 10% 98%;
-
-    --card: 142 36% 15%;
-    --card-foreground: 158 10% 98%;
-
-    --popover: 142 36% 15%;
-    --popover-foreground: 158 10% 98%;
-
-    --primary: 142 54% 30%;
-    --primary-foreground: 158 10% 98%;
-
-    --secondary: 142 30% 20%;
-    --secondary-foreground: 158 10% 98%;
-
-    --muted: 142 30% 20%;
-    --muted-foreground: 158 20% 65%;
-
-    --accent: 39 100% 50%;
-    --accent-foreground: 142 36% 15%;
-
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 158 10% 98%;
-
-    --border: 142 30% 20%;
-    --input: 142 30% 20%;
-    --ring: 158 10% 80%;
-    
-    --sidebar-background: 142 54% 15%;
-    --sidebar-foreground: 158 10% 98%;
-    --sidebar-primary: 142 54% 30%;
-    --sidebar-primary-foreground: 158 10% 98%;
-    --sidebar-accent: 39 100% 50%;
-    --sidebar-accent-foreground: 142 54% 15%;
-    --sidebar-border: 142 30% 20%;
-    --sidebar-ring: 142 54% 30%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.5% 48%;
   }
 }
 
@@ -89,83 +54,124 @@
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground min-h-screen;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
-
-  /* Custom scrollbar for a nicer look */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    @apply bg-muslim-green-600 rounded-full;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muslim-green-500;
-  }
-
-  /* Islamic pattern overlay for some containers */
-  .islamic-pattern-bg {
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l7.5 23.1h24.1l-19.5 14.2 7.5 23.1-19.5-14.2-19.5 14.2 7.5-23.1-19.5-14.2h24.1z' fill='%23064e29' fill-opacity='0.05'/%3E%3C/svg%3E");
+    @apply bg-background text-foreground;
   }
 }
 
-@layer components {
-  .btn-muslim {
-    @apply bg-muslim-green-600 text-white hover:bg-muslim-green-700 shadow-md px-6 py-3 rounded-md transition-all transform hover:scale-105 active:scale-95;
-  }
-  
-  .btn-muslim-outline {
-    @apply border-2 border-muslim-green-600 text-muslim-green-600 hover:bg-muslim-green-50 shadow-md px-6 py-3 rounded-md transition-all transform hover:scale-105 active:scale-95;
-  }
+/* Custom styles for the profile card */
+.profile-card {
+  @apply relative bg-white dark:bg-muslim-green-800 rounded-2xl shadow-xl overflow-hidden h-[calc(100vh-12rem)] max-h-[700px] w-full max-w-md mx-auto;
+}
 
-  .btn-muslim-gold {
-    @apply bg-muslim-gold-500 text-muslim-green-700 hover:bg-muslim-gold-600 shadow-md px-6 py-3 rounded-md transition-all transform hover:scale-105 active:scale-95;
-  }
+/* Swipe buttons */
+.swipe-button {
+  @apply w-16 h-16 flex items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110;
+}
 
-  .card-muslim {
-    @apply bg-card shadow-md rounded-xl overflow-hidden border border-muslim-green-100 dark:border-muslim-green-700;
+/* Swipe animations */
+@keyframes swipeRight {
+  from {
+    transform: translateX(0) rotate(0);
+    opacity: 1;
   }
-  
-  .input-muslim {
-    @apply border border-muslim-green-200 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-muslim-green-500 bg-white dark:bg-muslim-green-800 dark:border-muslim-green-700;
-  }
-
-  .label-muslim {
-    @apply block text-sm font-medium text-muslim-green-700 dark:text-muslim-green-200 mb-1;
-  }
-
-  .profile-card {
-    @apply relative bg-card shadow-lg rounded-2xl overflow-hidden h-[36rem] w-full max-w-sm mx-auto;
-  }
-  
-  .match-notification {
-    @apply fixed inset-0 flex items-center justify-center z-50 bg-black/70;
-  }
-
-  .premium-badge {
-    @apply inline-flex items-center gap-1 bg-gradient-to-r from-muslim-gold-400 to-muslim-gold-600 text-muslim-green-800 text-sm font-bold px-3 py-1 rounded-full shadow-sm;
-  }
-  
-  .swipe-button {
-    @apply w-16 h-16 flex items-center justify-center rounded-full shadow-lg transition-transform active:scale-90;
+  to {
+    transform: translateX(150%) rotate(30deg);
+    opacity: 0;
   }
 }
 
-/* Telegram Mini App specific styles */
-.tg-page {
-  @apply max-w-md mx-auto min-h-screen flex flex-col overflow-x-hidden;
+@keyframes swipeLeft {
+  from {
+    transform: translateX(0) rotate(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-150%) rotate(-30deg);
+    opacity: 0;
+  }
 }
 
-.safe-area {
-  @apply px-4 py-2;
+.animate-swipe-right {
+  animation: swipeRight 0.5s forwards ease-out;
+}
+
+.animate-swipe-left {
+  animation: swipeLeft 0.5s forwards ease-out;
+}
+
+/* Muslim theme colors */
+.bg-muslim-green-50 {
+  @apply bg-green-50;
+}
+.bg-muslim-green-100 {
+  @apply bg-green-100;
+}
+.bg-muslim-green-200 {
+  @apply bg-green-200;
+}
+.bg-muslim-green-300 {
+  @apply bg-green-300;
+}
+.bg-muslim-green-400 {
+  @apply bg-green-400;
+}
+.bg-muslim-green-500 {
+  @apply bg-green-500;
+}
+.bg-muslim-green-600 {
+  @apply bg-green-600;
+}
+.bg-muslim-green-700 {
+  @apply bg-green-700;
+}
+.bg-muslim-green-800 {
+  @apply bg-green-800;
+}
+.bg-muslim-green-900 {
+  @apply bg-green-900;
+}
+
+.text-muslim-green-50 {
+  @apply text-green-50;
+}
+.text-muslim-green-100 {
+  @apply text-green-100;
+}
+.text-muslim-green-200 {
+  @apply text-green-200;
+}
+.text-muslim-green-300 {
+  @apply text-green-300;
+}
+.text-muslim-green-400 {
+  @apply text-green-400;
+}
+.text-muslim-green-500 {
+  @apply text-green-500;
+}
+.text-muslim-green-600 {
+  @apply text-green-600;
+}
+.text-muslim-green-700 {
+  @apply text-green-700;
+}
+.text-muslim-green-800 {
+  @apply text-green-800;
+}
+.text-muslim-green-900 {
+  @apply text-green-900;
+}
+
+.bg-muslim-gold-100 {
+  background-color: #FEF3C7;
+}
+.bg-muslim-gold-800 {
+  background-color: #92400E;
+}
+.text-muslim-gold-300 {
+  color: #FCD34D;
+}
+.text-muslim-gold-700 {
+  color: #B45309;
 }

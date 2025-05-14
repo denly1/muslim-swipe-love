@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { useAuth } from "./useAuth";
 import { toast } from "@/components/ui/use-toast";
 
-// Define a Profile type for our dating profiles
+// Определяем тип Profile для наших анкет знакомств
 export type Profile = {
   id: string;
   name: string;
@@ -15,19 +15,30 @@ export type Profile = {
     city?: string;
     country?: string;
   };
-  distance?: number; // in km
+  distance?: number; // в км
   interests: string[];
   religiousLevel: "practicing" | "moderate" | "cultural";
   maritalStatus: "single" | "divorced" | "widowed";
   lookingFor: "marriage" | "friendship" | "both";
-  telegramUsername?: string; // Added Telegram username field
+  telegramUsername?: string; // Поле для имени пользователя Telegram
 };
 
 export type UserProfile = Profile & {
   userId: string;
   email: string;
   premium: boolean;
-  likesReceived: string[]; // IDs of users who liked this profile
+  likesReceived: string[]; // ID пользователей, которые поставили лайк этому профилю
+};
+
+// Тип для фильтров поиска
+export type FilterSettings = {
+  minAge: number;
+  maxAge: number;
+  distance: number;
+  religiousLevel?: ("practicing" | "moderate" | "cultural")[];
+  maritalStatus?: ("single" | "divorced" | "widowed")[];
+  lookingFor?: "marriage" | "friendship" | "both";
+  hasTelegram?: boolean;
 };
 
 type ProfileContextType = {
@@ -39,6 +50,7 @@ type ProfileContextType = {
   currentProfile: Profile | null;
   loadingProfiles: boolean;
   loadingLocation: boolean;
+  filterSettings: FilterSettings;
   createUserProfile: (profile: Omit<UserProfile, "id" | "userId" | "premium" | "likesReceived" | "email">) => void;
   updateUserProfile: (updates: Partial<UserProfile>) => void;
   likeProfile: (profileId: string) => void;
@@ -47,9 +59,10 @@ type ProfileContextType = {
   canViewLikes: boolean;
   viewLikedByProfiles: Profile[];
   requestLocationPermission: () => Promise<boolean>;
+  updateFilterSettings: (settings: Partial<FilterSettings>) => void;
 };
 
-// Mock profiles
+// Моковые профили
 const mockProfiles: Profile[] = [
   {
     id: "profile1",
@@ -157,62 +170,112 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   
-  // Store profiles that liked the user (viewable by premium users)
+  // Настройки фильтров поиска
+  const [filterSettings, setFilterSettings] = useState<FilterSettings>({
+    minAge: 18,
+    maxAge: 50,
+    distance: 50,
+    religiousLevel: ['practicing', 'moderate', 'cultural'],
+    maritalStatus: ['single', 'divorced', 'widowed'],
+    lookingFor: 'both',
+    hasTelegram: false,
+  });
+  
+  // Храним профили, которые поставили лайк пользователю (доступно премиум-пользователям)
   const [likedByProfiles, setLikedByProfiles] = useState<Profile[]>([]);
   
-  // Load profiles when the component mounts
+  // Загружаем профили при монтировании компонента
   useEffect(() => {
     if (user) {
       loadInitialData();
     }
   }, [user]);
 
-  // Load user profile and settings
+  // Загружаем профиль пользователя и настройки
   const loadInitialData = async () => {
-    // For demo purposes, we'll load mock data
+    // В демо-целях загрузим моковые данные
     setLoadingProfiles(true);
     
     try {
-      // Load stored data from localStorage
+      // Загружаем сохраненные данные из localStorage
       const storedLikes = localStorage.getItem(`muslim_dating_likes_${user?.id}`);
       const storedDislikes = localStorage.getItem(`muslim_dating_dislikes_${user?.id}`);
       const storedUserProfile = localStorage.getItem(`muslim_dating_profile_${user?.id}`);
+      const storedFilterSettings = localStorage.getItem(`muslim_dating_filters_${user?.id}`);
+      const storedMatches = localStorage.getItem(`muslim_dating_matches_${user?.id}`);
       
       if (storedLikes) setLikedProfiles(new Set(JSON.parse(storedLikes)));
       if (storedDislikes) setDislikedProfiles(new Set(JSON.parse(storedDislikes)));
       if (storedUserProfile) setUserProfile(JSON.parse(storedUserProfile));
+      if (storedFilterSettings) setFilterSettings(JSON.parse(storedFilterSettings));
+      if (storedMatches) setMatches(JSON.parse(storedMatches));
       
-      // Wait a moment to simulate API call
+      // Ждем немного, чтобы имитировать API-вызов
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Get actual location
+      // Получаем актуальное местоположение
       await requestLocationPermission();
       
-      // Filter and sort profiles
+      // Фильтруем и сортируем профили
       filterAndSortProfiles();
       
-      // Generate some fake likes for the user (for premium feature)
+      // Генерируем фейковые лайки для пользователя (для премиум-функции)
       generateFakeLikes();
     } catch (error) {
       console.error("Error loading profiles:", error);
       toast({
         variant: "destructive",
-        title: "Error loading profiles",
-        description: "Could not load profiles. Please try again later.",
+        title: "Ошибка загрузки профилей",
+        description: "Не удалось загрузить профили. Пожалуйста, попробуйте позже.",
       });
     } finally {
       setLoadingProfiles(false);
     }
   };
 
-  // Filter and sort profiles based on location, preferences, etc.
+  // Фильтруем и сортируем профили на основе местоположения, предпочтений и т.д.
   const filterAndSortProfiles = () => {
-    // Filter out liked and disliked profiles
+    // Фильтруем лайкнутые и дизлайкнутые профили
     let filteredProfiles = [...mockProfiles].filter(profile => 
       !likedProfiles.has(profile.id) && !dislikedProfiles.has(profile.id)
     );
     
-    // Sort by distance if we have user location
+    // Применяем фильтры поиска
+    filteredProfiles = filteredProfiles.filter(profile => {
+      // Фильтрация по возрасту
+      if (profile.age < filterSettings.minAge || profile.age > filterSettings.maxAge) {
+        return false;
+      }
+      
+      // Фильтрация по уровню религиозности
+      if (filterSettings.religiousLevel && 
+          !filterSettings.religiousLevel.includes(profile.religiousLevel)) {
+        return false;
+      }
+      
+      // Фильтрация по семейному положению
+      if (filterSettings.maritalStatus && 
+          !filterSettings.maritalStatus.includes(profile.maritalStatus)) {
+        return false;
+      }
+      
+      // Фильтрация по цели знакомства
+      if (filterSettings.lookingFor && 
+          filterSettings.lookingFor !== 'both' && 
+          profile.lookingFor !== filterSettings.lookingFor &&
+          profile.lookingFor !== 'both') {
+        return false;
+      }
+      
+      // Фильтрация по наличию Telegram
+      if (filterSettings.hasTelegram && !profile.telegramUsername) {
+        return false;
+      }
+      
+      return true;
+    });
+    
+    // Сортируем по расстоянию, если у нас есть местоположение пользователя
     if (userLocation) {
       filteredProfiles = filteredProfiles.map(profile => {
         if (profile.location) {
@@ -222,17 +285,25 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
             profile.location.latitude,
             profile.location.longitude
           );
+          
+          // Применяем фильтр по расстоянию
+          if (distance > filterSettings.distance) {
+            return null; // Исключаем профили, которые слишком далеко
+          }
+          
           return { ...profile, distance };
         }
         return profile;
-      }).sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+      })
+      .filter(Boolean) // Удаляем null записи
+      .sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
     }
     
-    setProfiles(filteredProfiles);
-    setCurrentProfile(filteredProfiles.length > 0 ? filteredProfiles[0] : null);
+    setProfiles(filteredProfiles as Profile[]);
+    setCurrentProfile(filteredProfiles.length > 0 ? filteredProfiles[0] as Profile : null);
   };
   
-  // Calculate distance between two points using Haversine formula
+  // Рассчитываем расстояние между двумя точками по формуле Haversine
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 6371; // Radius of the earth in km
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -246,7 +317,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     return Math.round(distance);
   };
 
-  // For the premium feature - generate fake profiles that liked the user
+  // Для премиум-функции - генерируем фейковые профили, которые лайкнули пользователя
   const generateFakeLikes = () => {
     // Randomly select 3 profiles that "liked" the user
     const selectedProfiles = [...mockProfiles]
@@ -266,7 +337,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Request location permission
+  // Запрашиваем разрешение на местоположение
   const requestLocationPermission = async (): Promise<boolean> => {
     setLoadingLocation(true);
     try {
@@ -320,7 +391,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  // Create a user profile
+  // Создаем профиль пользователя
   const createUserProfile = (profile: Omit<UserProfile, "id" | "userId" | "premium" | "likesReceived" | "email">) => {
     if (!user) return;
     
@@ -342,7 +413,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     });
   };
   
-  // Update user profile
+  // Обновляем профиль пользователя
   const updateUserProfile = (updates: Partial<UserProfile>) => {
     if (!user || !userProfile) return;
     
@@ -356,56 +427,71 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
     });
   };
   
-  // Like a profile
+  // Ставим лайк профилю
   const likeProfile = (profileId: string) => {
     if (!user) return;
     
-    // Update liked profiles
+    // Обновляем список лайкнутых профилей
     const newLikedProfiles = new Set(likedProfiles);
     newLikedProfiles.add(profileId);
     setLikedProfiles(newLikedProfiles);
     localStorage.setItem(`muslim_dating_likes_${user.id}`, JSON.stringify([...newLikedProfiles]));
     
-    // Check for a match
+    // Проверяем на совпадение
     const likedProfile = profiles.find(p => p.id === profileId);
     if (likedProfile && likedByProfiles.some(p => p.id === profileId)) {
-      // It's a match!
-      setMatches(prev => [...prev, likedProfile]);
+      // Это матч!
+      const updatedMatches = [...matches, likedProfile];
+      setMatches(updatedMatches);
+      localStorage.setItem(`muslim_dating_matches_${user.id}`, JSON.stringify(updatedMatches));
+      
       toast({
-        title: "It's a match! 💚",
-        description: `You and ${likedProfile.name} liked each other!`,
+        title: "Это матч! 💚",
+        description: `Вы и ${likedProfile.name} понравились друг другу!`,
       });
     }
     
-    // Move to the next profile
+    // Переходим к следующему профилю
     nextProfile();
   };
   
-  // Dislike a profile
+  // Ставим дизлайк профилю
   const dislikeProfile = (profileId: string) => {
     if (!user) return;
     
-    // Update disliked profiles
+    // Обновляем список дизлайкнутых профилей
     const newDislikedProfiles = new Set(dislikedProfiles);
     newDislikedProfiles.add(profileId);
     setDislikedProfiles(newDislikedProfiles);
     localStorage.setItem(`muslim_dating_dislikes_${user.id}`, JSON.stringify([...newDislikedProfiles]));
     
-    // Move to the next profile
+    // Переходим к следующему профилю
     nextProfile();
   };
   
-  // Move to the next profile
+  // Переходим к следующему профилю
   const nextProfile = () => {
     if (profiles.length === 0) return;
     
     const currentIndex = profiles.findIndex(p => p.id === currentProfile?.id);
     if (currentIndex === -1 || currentIndex === profiles.length - 1) {
-      // We're at the end, refresh the list
+      // Мы в конце списка, обновляем его
       filterAndSortProfiles();
     } else {
       setCurrentProfile(profiles[currentIndex + 1]);
     }
+  };
+  
+  // Обновляем настройки фильтров
+  const updateFilterSettings = (settings: Partial<FilterSettings>) => {
+    if (!user) return;
+    
+    const newSettings = { ...filterSettings, ...settings };
+    setFilterSettings(newSettings);
+    localStorage.setItem(`muslim_dating_filters_${user.id}`, JSON.stringify(newSettings));
+    
+    // Перезагружаем профили с новыми фильтрами
+    filterAndSortProfiles();
   };
 
   return (
@@ -419,6 +505,7 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         currentProfile,
         loadingProfiles,
         loadingLocation,
+        filterSettings,
         createUserProfile,
         updateUserProfile,
         likeProfile,
@@ -426,7 +513,8 @@ export const ProfileProvider = ({ children }: { children: ReactNode }) => {
         nextProfile,
         canViewLikes: !!user?.premium,
         viewLikedByProfiles: isPremium ? likedByProfiles : [],
-        requestLocationPermission
+        requestLocationPermission,
+        updateFilterSettings
       }}
     >
       {children}

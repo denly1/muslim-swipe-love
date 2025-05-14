@@ -15,6 +15,8 @@ import Profile from "./pages/Profile";
 import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Matches from "./pages/Matches";
+import Filters from "./pages/Filters";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +43,16 @@ const App = () => (
             <Route path="/premium" element={
               <ProtectedRoute>
                 <Premium />
+              </ProtectedRoute>
+            } />
+            <Route path="/matches" element={
+              <ProtectedRoute>
+                <Matches />
+              </ProtectedRoute>
+            } />
+            <Route path="/filters" element={
+              <ProtectedRoute>
+                <Filters />
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
