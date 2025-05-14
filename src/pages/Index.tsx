@@ -61,7 +61,9 @@ const Index = () => {
   
   // Handle register form submission
   const onRegisterSubmit = async (data: RegisterFormValues) => {
-    await register(data.name, data.email, data.password);
+    // Passing an empty string as telegramUsername since we can't collect it on this page
+    // In a real app, you might want to add this field to the form
+    await register(data.name, data.email, data.password, "", undefined);
   };
 
   return (

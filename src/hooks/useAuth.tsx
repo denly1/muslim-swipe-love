@@ -1,5 +1,6 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 
 // Define types for our user and auth context
@@ -31,21 +32,8 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// This wrapper adds safety around router hooks
-const SafeAuthProvider = ({ children }: { children: ReactNode }) => {
-  try {
-    return <AuthProviderWithRouter>{children}</AuthProviderWithRouter>;
-  } catch (error) {
-    console.error("Router context not available:", error);
-    // Fallback that doesn't use router hooks
-    return <div>Loading authentication...</div>;
-  }
-};
-
-// The actual provider that uses router hooks
-const AuthProviderWithRouter = ({ children }: { children: ReactNode }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
+// Main Auth Provider component that doesn't rely on router hooks
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPremium, setIsPremium] = useState(false);
@@ -92,13 +80,16 @@ const AuthProviderWithRouter = ({ children }: { children: ReactNode }) => {
         description: "Добро пожаловать в Halal Match!",
         className: "bg-telegram-blue text-white",
       });
-      navigate("/dashboard");
+      
+      // Navigate will be handled in the hook
+      return Promise.resolve();
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Ошибка входа",
         description: error instanceof Error ? error.message : "Проверьте ваши данные",
       });
+      return Promise.reject(error);
     } finally {
       setIsLoading(false);
     }
@@ -133,13 +124,16 @@ const AuthProviderWithRouter = ({ children }: { children: ReactNode }) => {
         description: "Добро пожаловать в Halal Match!",
         className: "bg-telegram-blue text-white",
       });
-      navigate("/profile");
+      
+      // Navigation will be handled in the hook
+      return Promise.resolve();
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Ошибка регистрации",
         description: error instanceof Error ? error.message : "Пожалуйста, попробуйте еще раз",
       });
+      return Promise.reject(error);
     } finally {
       setIsLoading(false);
     }
@@ -148,11 +142,11 @@ const AuthProviderWithRouter = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("muslim_dating_user");
-    navigate("/");
     toast({
       title: "Выход выполнен",
       description: "Вы успешно вышли из системы.",
     });
+    // Navigation will be handled in the hook
   };
 
   const updateUser = (updatedUser: Partial<User>) => {
@@ -223,15 +217,7 @@ const AuthProviderWithRouter = ({ children }: { children: ReactNode }) => {
         isAuthenticated: !!user,
         login,
         register,
-        logout: () => {
-          setUser(null);
-          localStorage.removeItem("muslim_dating_user");
-          navigate("/");
-          toast({
-            title: "Выход выполнен",
-            description: "Вы успешно вышли из системы.",
-          });
-        },
+        logout,
         updateUser,
         getLikeLimit,
         hasReachedLikeLimit,
@@ -245,15 +231,47 @@ const AuthProviderWithRouter = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Export the safe provider
-export const AuthProvider = SafeAuthProvider;
-
+// Custom hook to use the auth context with navigation
 export const useAuth = () => {
   const context = useContext(AuthContext);
+  
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context;
+  
+  // Create a wrapped version of login/register/logout functions that handle navigation
+  // Only try to use navigation if we're in a router context
+  let navigate: ReturnType<typeof useNavigate> | undefined;
+  let location: ReturnType<typeof useLocation> | undefined;
+  
+  try {
+    navigate = useNavigate();
+    location = useLocation();
+  } catch (error) {
+    console.log("Navigation hooks not available in this context");
+  }
+  
+  const enhancedLogin = async (email: string, password: string) => {
+    await context.login(email, password);
+    navigate && navigate("/dashboard");
+  };
+  
+  const enhancedRegister = async (name: string, email: string, password: string, telegramUsername: string, avatar?: File) => {
+    await context.register(name, email, password, telegramUsername, avatar);
+    navigate && navigate("/profile");
+  };
+  
+  const enhancedLogout = () => {
+    context.logout();
+    navigate && navigate("/");
+  };
+  
+  return {
+    ...context,
+    login: enhancedLogin,
+    register: enhancedRegister,
+    logout: enhancedLogout,
+  };
 };
 
 export default useAuth;
